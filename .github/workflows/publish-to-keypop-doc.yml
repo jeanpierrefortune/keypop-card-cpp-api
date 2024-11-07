@@ -1,35 +1,37 @@
-name: Build Jekyll Site on gh-pages Push
+name: Jekyll deployment to keypop-doc
 
 on:
-  push:
-    branches:
-      - gh-pages
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["Publish API documentation (snapshot)"]
+    types:
+      - completed
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
         with:
-          ref: gh-pages
+          fetch-depth: 0
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.0
+          ruby-version: '3.1'
+          bundler-cache: true
+
+      - name: Install Jekyll dependencies
+        run: bundle install
 
       - name: Build Jekyll site
-        run: bundle exec jekyll build --destination ./_site
+        run: bundle exec jekyll build
 
-      - name: Commit and Push built site
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git add -A
-          git commit -m "Rebuild site on keypop-doc push" || echo "No changes to commit"
-          git push origin keypop-doc
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy to keypop-doc branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
+          destination_branch: keypop-doc
