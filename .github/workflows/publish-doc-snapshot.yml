@@ -38,7 +38,7 @@ jobs:
       - name: Clone doc repository (submodule parent)
         run: |
           git clone --branch gh-pages https://github.com/${{ github.repository_owner }}/keypop-doc.git
-          cd doc
+          cd keypop-doc
           git submodule update --init --recursive --remote
           # Ensure .gitmodules uses https for all submodules
           sed -i 's|git@github.com:|https://github.com/|' .gitmodules
