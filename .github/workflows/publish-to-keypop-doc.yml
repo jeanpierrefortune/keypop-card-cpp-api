@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - gh-pages
-  workflow_dispatch:  # Allows for manual trigger
+  workflow_dispatch:
 
 jobs:
   build-deploy:
@@ -12,12 +12,16 @@ jobs:
 
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: List files
+        run: ls -l
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.0'
+          bundler-cache: true  # Cache gems for faster builds
 
       - name: Install dependencies
         run: bundle install
