@@ -37,13 +37,17 @@ jobs:
 
       - name: Clone doc repository (submodule parent)
         run: |
-          git clone --branch gh-pages https://github.com/jeanpierrefortune/keyple-ddoc.git
+          git clone --branch gh-pages https://github.com/${{ github.repository_owner }}/keypop-doc.git
           cd doc
-          git submodule update --init --recursive
+          git submodule update --init --recursive --remote
+          # Ensure .gitmodules uses https for all submodules
+          sed -i 's|git@github.com:|https://github.com/|' .gitmodules
+          git add .gitmodules
+          git commit -m "Use https URLs for submodules" || echo "No changes to commit"
+          git push origin gh-pages
 
       - name: Copy documentation to submodule
         run: |
-          # Assuming prepare_doxygen.sh copies docs to .github/doxygen/out/html/
           DOC_OUTPUT_PATH=".github/doxygen/out/html"
           TARGET_SUBMODULE_PATH="./${{ github.event.repository.name }}/"
           
@@ -62,3 +66,10 @@ jobs:
           git push origin gh-pages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add .nojekyll file (Optional)
+        run: |
+          touch doc/.nojekyll
+          git add doc/.nojekyll
+          git commit -m "Add .nojekyll to bypass Jekyll processing"
+          git push origin gh-pages
