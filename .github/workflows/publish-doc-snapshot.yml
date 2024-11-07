@@ -17,59 +17,22 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Make scripts executable
         run: chmod +x ./.github/scripts/*.sh
-
       - name: Patch Doxyfile
         working-directory: .
         run: ./.github/scripts/patch_doxyfile.sh
-
       - name: Generate project documentation with Doxygen
         uses: mattnotmitt/doxygen-action@v1.9.2
         with:
           working-directory: .github/doxygen/
           doxyfile-path: ./Doxyfile
-
       - name: Prepare Doxygen doc page locally
         working-directory: .
         run: ./.github/scripts/prepare_doxygen.sh
-
-      - name: Clone doc repository (submodule parent)
-        run: |
-          git clone --branch gh-pages https://github.com/${{ github.repository_owner }}/keypop-doc.git
-          cd keypop-doc
-          git submodule update --init --recursive --remote
-          # Ensure .gitmodules uses https for all submodules
-          sed -i 's|git@github.com:|https://github.com/|' .gitmodules
-          git add .gitmodules
-          git commit -m "Use https URLs for submodules" || echo "No changes to commit"
-          git push origin gh-pages
-
-      - name: Copy documentation to submodule
-        run: |
-          DOC_OUTPUT_PATH=".github/doxygen/out/html"
-          TARGET_SUBMODULE_PATH="./${{ github.event.repository.name }}/"
-          
-          # Delete old documentation if exists
-          rm -rf "$TARGET_SUBMODULE_PATH"/*  
-          
-          # Copy the new documentation
-          cp -r "$DOC_OUTPUT_PATH"/* "$TARGET_SUBMODULE_PATH"
-        working-directory: doc
-
-      - name: Commit and Push Documentation to Submodule
-        run: |
-          cd doc/${{ github.event.repository.name }}
-          git add .
-          git commit -m "Update documentation for ${{ github.event.repository.name }}"
-          git push origin gh-pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Add .nojekyll file (Optional)
-        run: |
-          touch doc/.nojekyll
-          git add doc/.nojekyll
-          git commit -m "Add .nojekyll to bypass Jekyll processing"
-          git push origin gh-pages
+      - name: Deploy Doxygen documentation to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./${{ github.event.repository.name }}
+          enable_jekyll: true
