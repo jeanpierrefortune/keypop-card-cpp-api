@@ -3,7 +3,11 @@
 {% assign capitalized_words = "" %}
 
 {% for word in words %}
+{% if word == "api" %}
+{% assign capitalized_word = word | upcase %}
+{% else %}
 {% assign capitalized_word = word | capitalize %}
+{% endif %}
 {% assign capitalized_words = capitalized_words | append: capitalized_word | append: " " %}
 {% endfor %}
 
