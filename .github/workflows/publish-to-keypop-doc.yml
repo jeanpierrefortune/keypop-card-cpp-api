@@ -11,9 +11,9 @@ jobs:
   notify-doc-site:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger repository_dispatch event
+      - name: Repository Dispatch Event
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT }}
           repository: jeanpierrefortune/keypop-doc
           event-type: update-submodules
