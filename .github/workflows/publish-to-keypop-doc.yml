@@ -1,4 +1,4 @@
-name: Jekyll deployment to keypop-doc 2
+name: Trigger Documentation Update
 
 on:
   workflow_run:
@@ -8,31 +8,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  notify-doc-site:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Trigger repository_dispatch event
+        uses: peter-evans/repository-dispatch@v2
         with:
-          fetch-depth: 0
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.1'
-          bundler-cache: true
-
-      - name: Install Jekyll dependencies
-        run: bundle install
-
-      - name: Build Jekyll site
-        run: bundle exec jekyll build
-
-      - name: Deploy to keypop-doc branch
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./_site
-          destination_branch: keypop-doc
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: jeanpierrefortune/keypop-doc
+          event-type: update-submodules
