@@ -26,11 +26,36 @@ mkdir "$version"
 echo "Copy Doxygen doc..."
 cp -rf ../.github/doxygen/out/html/* "$version"/
 
+# Update "latest" only for stable versions (non SNAPSHOT)
+if ! echo "$version" | grep -q "SNAPSHOT"; then
+    echo "Creating/Updating latest symlink..."
+    rm -f latest
+    ln -s "$version" latest
+
+    # Ensure .nojekyll exists to prevent GitHub Pages from processing special files
+    touch .nojekyll
+
+    # Update robots.txt to allow indexing of latest version only
+    cat > robots.txt << EOF
+User-agent: *
+Allow: /
+Allow: /latest/
+Disallow: /*/[0-9]*/
+EOF
+fi
+
 echo "Update versions list..."
 echo "| Version | Documents |" >list_versions.md
 echo "|:---:|---|" >>list_versions.md
+
+# Add "latest" entry only for stable versions
+if [ -L "latest" ]; then
+    echo "| latest | [API documentation](latest) |" >>list_versions.md
+fi
+
+# Add all version-specific entries
 for directory in $(ls -rd [0-9]*/ | cut -f1 -d'/'); do
-  echo "| $directory | [API documentation]($directory) |" >>list_versions.md
+    echo "| $directory | [API documentation]($directory) |" >>list_versions.md
 done
 
 echo "Computed all versions:"
