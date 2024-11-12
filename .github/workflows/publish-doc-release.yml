@@ -3,6 +3,7 @@ name: Publish API documentation (release)
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   publish-doc-release:
