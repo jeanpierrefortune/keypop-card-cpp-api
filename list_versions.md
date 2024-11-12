@@ -1,4 +1,3 @@
 | Version | Documents |
 |:---:|---|
-| latest | [API documentation](latest) |
-| 2.0.1 | [API documentation](2.0.1) |
+| 2.1.0-rc1 | [API documentation](2.1.0-rc1) |
