@@ -4,8 +4,19 @@ echo "Compute the current API version..."
 version=$1
 
 if [ "$version" = "" ]; then
-  # SNAPSHOT version
-  version="$(sed -rn 's/.*MAJOR.*\"(.*)\".*/\1/p' CMakeLists.txt).$(sed -rn 's/.*MINOR.*\"(.*)\".*/\1/p' CMakeLists.txt).$(sed -rn 's/.*PATCH.*\"(.*)\".*/\1/p' CMakeLists.txt)-SNAPSHOT"
+    # Extract version components
+    major=$(sed -rn 's/.*MAJOR.*\"(.*)\".*/\1/p' CMakeLists.txt)
+    minor=$(sed -rn 's/.*MINOR.*\"(.*)\".*/\1/p' CMakeLists.txt)
+    patch=$(sed -rn 's/.*PATCH.*\"(.*)\".*/\1/p' CMakeLists.txt)
+    rc=$(sed -rn 's/.*VERSION_RC.*\"(.*)\".*/\1/p' CMakeLists.txt)
+
+    # Construct version string
+    version="${major}.${minor}.${patch}"
+    if [ ! -z "$rc" ]; then
+        version="${version}-rc${rc}"
+    else
+        version="${version}-SNAPSHOT"
+    fi
 fi
 
 echo "Computed current API version: $version"
@@ -26,8 +37,8 @@ mkdir "$version"
 echo "Copy Doxygen doc..."
 cp -rf ../.github/doxygen/out/html/* "$version"/
 
-# Update "latest" only for stable versions (non SNAPSHOT)
-if ! echo "$version" | grep -q "SNAPSHOT"; then
+# Update "latest" only for stable versions (non SNAPSHOT and non RC)
+if ! echo "$version" | grep -q "SNAPSHOT" && ! echo "$version" | grep -q "rc"; then
     echo "Creating/Updating latest symlink..."
     rm -f latest
     ln -s "$version" latest
@@ -51,7 +62,8 @@ if [ -L "latest" ]; then
 fi
 
 # Add all version-specific entries
-for directory in $(ls -rd [0-9]*/ | cut -f1 -d'/'); do
+# Sort in reverse order, with RC versions appearing after their corresponding release version
+for directory in $(ls -rd [0-9]*/ | cut -f1 -d'/' | sort -V -r); do
     echo "| $directory | [API documentation]($directory) |" >>list_versions.md
 done
 
