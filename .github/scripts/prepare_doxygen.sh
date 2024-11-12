@@ -32,9 +32,6 @@ if ! echo "$version" | grep -q "SNAPSHOT"; then
     rm -f latest
     ln -s "$version" latest
 
-    # Ensure .nojekyll exists to prevent GitHub Pages from processing special files
-    touch .nojekyll
-
     # Update robots.txt to allow indexing of latest version only
     cat > robots.txt << EOF
 User-agent: *
