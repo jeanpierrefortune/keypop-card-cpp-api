@@ -5,10 +5,10 @@ version=$1
 
 if [ "$version" = "" ]; then
     # Extract version components
-    major=$(sed -rn 's/.*MAJOR.*\"(.*)\".*/\1/p' CMakeLists.txt)
-    minor=$(sed -rn 's/.*MINOR.*\"(.*)\".*/\1/p' CMakeLists.txt)
-    patch=$(sed -rn 's/.*PATCH.*\"(.*)\".*/\1/p' CMakeLists.txt)
-    rc=$(sed -rn 's/.*VERSION_RC.*\"(.*)\".*/\1/p' CMakeLists.txt)
+    major=$(sed -rn 's/^SET\(CMAKE_PROJECT_VERSION_MAJOR[[:space:]]*"(.*)"\)/\1/p' CMakeLists.txt)
+    minor=$(sed -rn 's/^SET\(CMAKE_PROJECT_VERSION_MINOR[[:space:]]*"(.*)"\)/\1/p' CMakeLists.txt)
+    patch=$(sed -rn 's/^SET\(CMAKE_PROJECT_VERSION_PATCH[[:space:]]*"(.*)"\)/\1/p' CMakeLists.txt)
+    rc=$(sed -rn 's/^SET\(CMAKE_PROJECT_VERSION_RC[[:space:]]*"(.*)"\)/\1/p' CMakeLists.txt)
 
     # Construct version string
     version="${major}.${minor}.${patch}"
@@ -24,7 +24,7 @@ echo "Computed current API version: $version"
 repository_name=$(git rev-parse --show-toplevel | xargs basename)
 
 echo "Clone $repository_name..."
-git clone --branch gh-pages https://github.com/eclipse-keypop/"$repository_name".git
+git clone --branch gh-pages https://github.com/jeanpierrefortune/"$repository_name".git
 
 cd "$repository_name" || exit
 
