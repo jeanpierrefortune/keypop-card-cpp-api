@@ -9,22 +9,20 @@ from packaging.version import parse, Version, InvalidVersion
 
 class DocumentationManager:
     def __init__(self, github_org: str, repo_name: str):
-        """
-        Initialize documentation manager
-        Args:
-            github_org: GitHub organization name
-            repo_name: Repository name
-        """
         self.repo_url = f"https://github.com/{github_org}/{repo_name}.git"
         self.gh_pages_branch = "gh-pages"
         self.version_pattern = re.compile(r'^\d+\.\d+\.\d+(?:-rc\d+)?(?:-SNAPSHOT)?$')
 
     def _parse_cmake_version(self, cmake_file: Path) -> str:
-        """Extract version from CMakeLists.txt"""
+        """
+        Extract version from CMakeLists.txt
+        Takes into account commented RC version
+        """
         content = cmake_file.read_text()
 
         def extract_value(key: str) -> str:
-            pattern = f'SET\\({key}[\\s]*"([^"]*)"\\)'
+            # Look for uncommented SET lines only (no # at start of line)
+            pattern = f'^[^#]*SET\\({key}[\\s]*"([^"]*)"\\)'
             match = re.search(pattern, content, re.MULTILINE)
             return match.group(1) if match else None
 
@@ -33,8 +31,11 @@ class DocumentationManager:
         patch = extract_value("CMAKE_PROJECT_VERSION_PATCH")
         rc = extract_value("CMAKE_PROJECT_VERSION_RC")
 
+        if not all([major, minor, patch]):
+            raise ValueError("Could not extract all required version components")
+
         version = f"{major}.{minor}.{patch}"
-        if rc:
+        if rc:  # RC is defined and not commented
             return f"{version}-rc{rc}-SNAPSHOT"
         return f"{version}-SNAPSHOT"
 
