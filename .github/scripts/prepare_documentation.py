@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -10,14 +11,14 @@ class DocumentationManager:
     def __init__(self, repo_url: str):
         self.repo_url = repo_url
         self.gh_pages_branch = "gh-pages"
+        # Pattern to match version directories (x.y.z optionally followed by -rc<n> and/or -SNAPSHOT)
+        self.version_pattern = re.compile(r'^\d+\.\d+\.\d+(?:-rc\d+)?(?:-SNAPSHOT)?$')
 
     def _parse_cmake_version(self, cmake_file: Path) -> str:
         """Extract version from CMakeLists.txt"""
         content = cmake_file.read_text()
 
-        # Extract version components
         def extract_value(key: str) -> str:
-            import re
             pattern = f'SET\\({key}[\\s]*"([^"]*)"\\)'
             match = re.search(pattern, content, re.MULTILINE)
             return match.group(1) if match else None
@@ -27,16 +28,24 @@ class DocumentationManager:
         patch = extract_value("CMAKE_PROJECT_VERSION_PATCH")
         rc = extract_value("CMAKE_PROJECT_VERSION_RC")
 
-        # Build version string
         version = f"{major}.{minor}.{patch}"
         if rc:
             return f"{version}-rc{rc}-SNAPSHOT"
         return f"{version}-SNAPSHOT"
 
     def _get_version_key(self, version_str: str) -> tuple:
-        """Create a sortable key for version ordering"""
+        """
+        Create a sortable key for version ordering
+        Returns a tuple to ensure proper sorting:
+        - Base version components (major, minor, patch) first
+        - Then a category number:
+          0 for stable versions (first)
+          1 for RC versions (middle, with RC number negated to sort higher numbers first)
+          2 for SNAPSHOT versions (last)
+        """
         try:
-            v = parse(version_str)
+            base_version = version_str.split('-')[0]
+            v = parse(base_version)
             base = (v.major, v.minor, v.micro)
 
             if "SNAPSHOT" in version_str:
@@ -49,8 +58,14 @@ class DocumentationManager:
             return (0, 0, 0, 999)  # Invalid versions last
 
     def prepare_documentation(self, version: str = None):
-        """Main method to prepare documentation"""
-        # Get version
+        """
+        Main method to prepare documentation
+        - Clones gh-pages branch
+        - Cleans up existing SNAPSHOT versions if publishing a release
+        - Creates version directory and copies documentation
+        - Updates latest symlink for stable versions
+        - Generates version list
+        """
         if not version:
             version = self._parse_cmake_version(Path("CMakeLists.txt"))
         print(f"Using version: {version}")
@@ -79,14 +94,14 @@ class DocumentationManager:
         if doxygen_out.exists():
             shutil.copytree(doxygen_out, version_dir, dirs_exist_ok=True)
 
-        # Update latest symlink for stable versions
+        # Update latest symlink for stable versions only (no SNAPSHOT, no RC)
         if not any(x in version for x in ["-SNAPSHOT", "-rc"]):
             latest_link = dest_dir / "latest"
             if latest_link.exists():
                 latest_link.unlink()
             latest_link.symlink_to(version)
 
-            # Update robots.txt
+            # Update robots.txt to allow indexing of latest version only
             robots_txt = dest_dir / "robots.txt"
             robots_txt.write_text(
                 "User-agent: *\n"
@@ -99,11 +114,23 @@ class DocumentationManager:
         self._generate_versions_list(dest_dir)
 
     def _generate_versions_list(self, docs_dir: Path):
-        """Generate the versions list markdown file"""
+        """
+        Generate the versions list markdown file
+        Only includes directories matching the version pattern: x.y.z[-rcN][-SNAPSHOT]
+        Versions are sorted with most recent first:
+        - Stable versions (e.g., 2.1.0)
+        - RC versions (e.g., 2.1.0-rc2 before 2.1.0-rc1)
+        - SNAPSHOT versions
+        """
         versions_file = docs_dir / "list_versions.md"
 
-        # Get all version directories
-        versions = [d.name for d in docs_dir.iterdir() if d.is_dir() and not d.name.startswith(".")]
+        # Get only version directories that match the pattern
+        versions = [
+            d.name for d in docs_dir.iterdir()
+            if d.is_dir() and self.version_pattern.match(d.name)
+        ]
+
+        # Sort versions
         sorted_versions = sorted(versions, key=self._get_version_key)
 
         # Generate markdown
@@ -111,13 +138,16 @@ class DocumentationManager:
             f.write("| Version | Documents |\n")
             f.write("|:---:|---|\n")
 
-            # Add latest link if it exists
+            # Add latest link if it exists (stable versions only)
             if (docs_dir / "latest").exists():
                 f.write("| latest | [API documentation](latest) |\n")
 
-            # Add all versions
+            # Add all versions in reverse order (most recent first)
             for version in reversed(sorted_versions):
                 f.write(f"| {version} | [API documentation]({version}) |\n")
+
+        print("Generated versions list:")
+        print(versions_file.read_text())
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Prepare API documentation")
