@@ -53,36 +53,36 @@ EOF
 fi
 
 echo "Update versions list..."
-echo "| Version | Documents |" >list_versions.md
-echo "|:---:|---|" >>list_versions.md
+# Add header to the markdown table
+echo "| Version | Documents |" > list_versions.md
+echo "|:---:|---|" >> list_versions.md
 
 # Add "latest" entry only for stable versions
 if [ -L "latest" ]; then
-    echo "| latest | [API documentation](latest) |" >>list_versions.md
+    echo "| latest | [API documentation](latest) |" >> list_versions.md
 fi
 
 # Create a temporary file with versions in the desired order
+rm -f temp_versions.txt
 for directory in $(ls -d [0-9]*/ | cut -f1 -d'/'); do
-    # Convert version string to a sortable format
-    # For non-RC versions: append "zz" to make them sort before RC versions
-    # For RC versions: extract RC number and pad with zeros
-    version_str=$(echo "$directory" | sed 's/-rc/./g')
-    if echo "$directory" | grep -q "rc"; then
-        # RC version: pad RC number with zeros
-        echo "${version_str}a" >> temp_versions.txt
+    # Clean the directory name from any trailing spaces or special characters
+    clean_dir=$(echo "$directory" | tr -d '[:space:]')
+    if echo "$clean_dir" | grep -q "rc"; then
+        # RC version: use exact format "X.Y.Z-rcN"
+        echo "${clean_dir}" >> temp_versions.txt
     else
-        # Regular version: add "zz" to sort before RC
-        echo "${version_str}z" >> temp_versions.txt
+        echo "${clean_dir}" >> temp_versions.txt
     fi
 done
 
-# Sort versions and convert back to original format
-for version in $(sort -rV temp_versions.txt | sed 's/[az]$//g' | sed 's/\.rc/-rc/g'); do
-    echo "| $version | [API documentation]($version) |" >>list_versions.md
+# Sort versions and generate markdown entries
+sort -t. -k1,1nr -k2,2nr -k3,3nr -k4,4r temp_versions.txt | while read version; do
+    echo "| ${version} | [API documentation](${version}) |" >> list_versions.md
 done
 
 rm -f temp_versions.txt
 
+# Display result
 echo "Computed all versions:"
 cat list_versions.md
 
