@@ -61,11 +61,27 @@ if [ -L "latest" ]; then
     echo "| latest | [API documentation](latest) |" >>list_versions.md
 fi
 
-# Add all version-specific entries
-# Sort in reverse order, with RC versions appearing after their corresponding release version
-for directory in $(ls -rd [0-9]*/ | cut -f1 -d'/' | sort -V -r); do
-    echo "| $directory | [API documentation]($directory) |" >>list_versions.md
+# Create a temporary file with versions in the desired order
+for directory in $(ls -d [0-9]*/ | cut -f1 -d'/'); do
+    # Convert version string to a sortable format
+    # For non-RC versions: append "zz" to make them sort before RC versions
+    # For RC versions: extract RC number and pad with zeros
+    version_str=$(echo "$directory" | sed 's/-rc/./g')
+    if echo "$directory" | grep -q "rc"; then
+        # RC version: pad RC number with zeros
+        echo "${version_str}a" >> temp_versions.txt
+    else
+        # Regular version: add "zz" to sort before RC
+        echo "${version_str}z" >> temp_versions.txt
+    fi
 done
+
+# Sort versions and convert back to original format
+for version in $(sort -rV temp_versions.txt | sed 's/[az]$//g' | sed 's/\.rc/-rc/g'); do
+    echo "| $version | [API documentation]($version) |" >>list_versions.md
+done
+
+rm -f temp_versions.txt
 
 echo "Computed all versions:"
 cat list_versions.md
