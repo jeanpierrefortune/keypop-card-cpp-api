@@ -8,8 +8,14 @@ from pathlib import Path
 from packaging.version import parse, Version, InvalidVersion
 
 class DocumentationManager:
-    def __init__(self, repo_url: str):
-        self.repo_url = repo_url
+    def __init__(self, github_org: str, repo_name: str):
+        """
+        Initialize documentation manager
+        Args:
+            github_org: GitHub organization name
+            repo_name: Repository name
+        """
+        self.repo_url = f"https://github.com/{github_org}/{repo_name}.git"
         self.gh_pages_branch = "gh-pages"
         self.version_pattern = re.compile(r'^\d+\.\d+\.\d+(?:-rc\d+)?(?:-SNAPSHOT)?$')
 
@@ -134,8 +140,10 @@ class DocumentationManager:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Prepare API documentation")
-    parser.add_argument("version", nargs="?", help="Version to publish (optional)")
+    parser.add_argument("--github-org", required=True, help="GitHub organization name")
+    parser.add_argument("--repo-name", required=True, help="Repository name")
+    parser.add_argument("--version", help="Version to publish (optional)")
     args = parser.parse_args()
 
-    manager = DocumentationManager("https://github.com/eclipse-keypop/keypop-card-cpp-api.git")
+    manager = DocumentationManager(args.github_org, args.repo_name)
     manager.prepare_documentation(args.version)

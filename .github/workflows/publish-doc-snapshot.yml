@@ -1,10 +1,8 @@
 name: Publish API documentation (snapshot)
-
 on:
   push:
     branches:
       - main
-      - doxygen
   workflow_dispatch:
 
 jobs:
@@ -13,28 +11,45 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code from ${{ github.repository }}/${{ github.ref }}
+      - name: Check out repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Extract repository information
+        id: repo-info
+        run: |
+          echo "org_name=${GITHUB_REPOSITORY_OWNER}" >> $GITHUB_OUTPUT
+          echo "repo_name=${GITHUB_REPOSITORY#*/}" >> $GITHUB_OUTPUT
+
       - name: Make scripts executable
         run: chmod +x ./.github/scripts/*.sh
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install packaging
+
       - name: Patch Doxyfile
         working-directory: .
         run: ./.github/scripts/patch_doxyfile.sh
+
       - name: Generate project documentation with Doxygen
         uses: mattnotmitt/doxygen-action@v1.9.2
         with:
           working-directory: .github/doxygen/
           doxyfile-path: ./Doxyfile
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-      - name: Install dependencies
-        run: pip install packaging
+
       - name: Prepare Doxygen doc page
-        run: python ./.github/scripts/prepare_documentation.py
+        working-directory: .
+        run: |
+          python ./.github/scripts/prepare_documentation.py \
+            --github-org "${{ steps.repo-info.outputs.org_name }}" \
+            --repo-name "${{ steps.repo-info.outputs.repo_name }}"
+
       - name: Deploy Doxygen documentation to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
