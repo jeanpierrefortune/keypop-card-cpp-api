@@ -9,12 +9,12 @@ from pathlib import Path
 from packaging.version import parse, Version, InvalidVersion
 
 class DocumentationManager:
-   def __init__(self, github_org: str, repo_name: str):
+    def __init__(self, github_org: str, repo_name: str):
        self.repo_url = f"https://github.com/{github_org}/{repo_name}.git"
        self.gh_pages_branch = "gh-pages"
        self.version_pattern = re.compile(r'^\d+\.\d+\.\d+(?:-rc\d+)?(?:-SNAPSHOT)?$')
 
-   def _parse_cmake_version(self, cmake_file: Path) -> str:
+    def _parse_cmake_version(self, cmake_file: Path) -> str:
        """
        Extract version from CMakeLists.txt
        Handles both PROJECT VERSION and RC_VERSION
@@ -40,7 +40,7 @@ class DocumentationManager:
            # No RC version or RC version is commented
            return f"{version}-SNAPSHOT"
 
-   def _get_version_key(self, version_str: str) -> tuple:
+    def _get_version_key(self, version_str: str) -> tuple:
        """Create a sortable key for version ordering"""
        try:
            base_version = version_str.split('-')[0]
@@ -56,68 +56,83 @@ class DocumentationManager:
        except InvalidVersion:
            return (0, 0, 0, 999)
 
-   def prepare_documentation(self, version: str = None):
-       """Main method to prepare documentation"""
-       if not version:
-           version = self._parse_cmake_version(Path("CMakeLists.txt"))
-       print(f"Using version: {version}")
+    def prepare_documentation(self, version: str = None):
+        """Main method to prepare documentation"""
+        if not version:
+            version = self._parse_cmake_version(Path("CMakeLists.txt"))
+        print(f"Using version: {version}")
 
-       # Get repository name as done in the bash script
-       repo_name = Path.cwd().name
-       dest_dir = Path(repo_name)
+        # Get repository name as done in the bash script
+        repo_name = Path.cwd().name
+        dest_dir = Path(repo_name)
 
-       print(f"Clone {repo_name}...")
-       if dest_dir.exists():
-           shutil.rmtree(dest_dir)
+        print(f"Clone {repo_name}...")
+        if dest_dir.exists():
+            shutil.rmtree(dest_dir)
 
-       subprocess.run(["git", "clone", "-b", self.gh_pages_branch, self.repo_url, repo_name], check=True)
+        subprocess.run(["git", "clone", "-b", self.gh_pages_branch, self.repo_url, repo_name], check=True)
 
-       # Change to the cloned directory
-       os.chdir(dest_dir)
+        # Change to the cloned directory
+        os.chdir(dest_dir)
 
-       print("Delete existing SNAPSHOT directory...")
-       for snapshot in Path().glob("*-SNAPSHOT"):
-           shutil.rmtree(snapshot)
+        print("Delete existing SNAPSHOT directory...")
+        if not version.endswith("-SNAPSHOT"):
+            # For RC release (e.g., "2.1.0-rc1")
+            if "-rc" in version:
+                # Only delete the corresponding RC SNAPSHOT
+                rc_snapshot = f"{version}-SNAPSHOT"
+                snapshot_path = Path(rc_snapshot)
+                if snapshot_path.exists():
+                    print(f"Removing RC SNAPSHOT directory: {snapshot_path}")
+                    shutil.rmtree(snapshot_path)
+            # For final release (e.g., "2.1.0")
+            else:
+                # Only delete the corresponding version SNAPSHOT
+                version_snapshot = f"{version}-SNAPSHOT"
+                snapshot_path = Path(version_snapshot)
+                if snapshot_path.exists():
+                    print(f"Removing version SNAPSHOT directory: {snapshot_path}")
+                    shutil.rmtree(snapshot_path)
 
-       print(f"Create target directory {version}...")
-       version_dir = Path(version)
-       version_dir.mkdir(exist_ok=True)
+        print(f"Create target directory {version}...")
+        version_dir = Path(version)
+        version_dir.mkdir(exist_ok=True)
 
-       print("Copy Doxygen doc...")
-       doxygen_out = Path("../.github/doxygen/out/html")
-       if doxygen_out.exists():
-           # Copy contents of html directory into version directory
-           for item in doxygen_out.glob("*"):
-               if item.is_dir():
-                   shutil.copytree(item, version_dir / item.name, dirs_exist_ok=True)
-               else:
-                   shutil.copy2(item, version_dir)
-       else:
-           raise FileNotFoundError(f"Doxygen output directory not found at {doxygen_out}")
+        print("Copy Doxygen doc...")
+        doxygen_out = Path("../.github/doxygen/out/html")
+        if doxygen_out.exists():
+            # Copy contents of html directory into version directory
+            for item in doxygen_out.glob("*"):
+                if item.is_dir():
+                    shutil.copytree(item, version_dir / item.name, dirs_exist_ok=True)
+                else:
+                    shutil.copy2(item, version_dir)
+        else:
+            raise FileNotFoundError(f"Doxygen output directory not found at {doxygen_out}")
 
-       if not any(x in version for x in ["-SNAPSHOT", "-rc"]):
-           print("Creating latest symlink...")
-           latest_link = Path("latest")
-           if latest_link.exists():
-               latest_link.unlink()
-           latest_link.symlink_to(version)
+        if not any(x in version for x in ["-SNAPSHOT", "-rc"]):
+            print("Creating latest symlink...")
+            latest_link = Path("latest")
+            if latest_link.exists():
+                latest_link.unlink()
+            latest_link.symlink_to(version)
 
-           print("Writing robots.txt...")
-           robots_txt = Path("robots.txt")
-           robots_txt.write_text(
-               "User-agent: *\n"
-               "Allow: /\n"
-               "Allow: /latest/\n"
-               "Disallow: /*/[0-9]*/\n"
-           )
+            print("Writing robots.txt...")
+            robots_txt = Path("robots.txt")
+            robots_txt.write_text(
+                "User-agent: *\n"
+                "Allow: /\n"
+                "Allow: /latest/\n"
+                "Disallow: /*/[0-9]*/\n"
+            )
 
-       print("Generating versions list...")
-       self._generate_versions_list(Path('.'))
+        print("Generating versions list...")
+        self._generate_versions_list(Path('.'))
 
-       # Return to original directory
-       os.chdir("..")
+        # Return to original directory
+        os.chdir("..")
 
-   def _generate_versions_list(self, docs_dir: Path):
+    def _generate_versions_list(self, docs_dir: Path):
        """Generate the versions list markdown file"""
        versions_file = Path("list_versions.md")
 
