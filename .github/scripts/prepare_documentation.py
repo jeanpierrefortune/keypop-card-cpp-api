@@ -55,60 +55,60 @@ class DocumentationManager:
         except InvalidVersion:
             return (0, 0, 0, 999)
 
-def prepare_documentation(self, version: str = None):
-    """Main method to prepare documentation"""
-    if not version:
-        version = self._parse_cmake_version(Path("CMakeLists.txt"))
-    print(f"Using version: {version}")
+    def prepare_documentation(self, version: str = None):
+        """Main method to prepare documentation"""
+        if not version:
+            version = self._parse_cmake_version(Path("CMakeLists.txt"))
+        print(f"Using version: {version}")
 
-    repo_name = Path.cwd().name
-    dest_dir = Path(repo_name)
-    if dest_dir.exists():
-        shutil.rmtree(dest_dir)
+        repo_name = Path.cwd().name
+        dest_dir = Path(repo_name)
+        if dest_dir.exists():
+            shutil.rmtree(dest_dir)
 
-    subprocess.run(["git", "clone", "-b", self.gh_pages_branch, self.repo_url, repo_name], check=True)
+        subprocess.run(["git", "clone", "-b", self.gh_pages_branch, self.repo_url, repo_name], check=True)
 
-    print(f"DEBUG: Current directories before cleanup: {list(dest_dir.glob('*'))}")
+        print(f"DEBUG: Current directories before cleanup: {list(dest_dir.glob('*'))}")
 
-    # Clean up SNAPSHOT versions if this is a release
-    if not version.endswith("-SNAPSHOT"):
-        if "-rc" in version:
-            rc_snapshot = f"{version}-SNAPSHOT"
-            snapshot_dir = dest_dir / rc_snapshot
-            if snapshot_dir.exists():
-                print(f"Removing RC SNAPSHOT directory: {snapshot_dir}")
-                shutil.rmtree(snapshot_dir)
-        else:
-            base_version = version
-            snapshot_dir = dest_dir / f"{base_version}-SNAPSHOT"
-            if snapshot_dir.exists():
-                print(f"Removing SNAPSHOT directory: {snapshot_dir}")
-                shutil.rmtree(snapshot_dir)
+        # Clean up SNAPSHOT versions if this is a release
+        if not version.endswith("-SNAPSHOT"):
+            if "-rc" in version:
+                rc_snapshot = f"{version}-SNAPSHOT"
+                snapshot_dir = dest_dir / rc_snapshot
+                if snapshot_dir.exists():
+                    print(f"Removing RC SNAPSHOT directory: {snapshot_dir}")
+                    shutil.rmtree(snapshot_dir)
+            else:
+                base_version = version
+                snapshot_dir = dest_dir / f"{base_version}-SNAPSHOT"
+                if snapshot_dir.exists():
+                    print(f"Removing SNAPSHOT directory: {snapshot_dir}")
+                    shutil.rmtree(snapshot_dir)
 
-        print(f"DEBUG: Current directories after cleanup: {list(dest_dir.glob('*'))}")
+            print(f"DEBUG: Current directories after cleanup: {list(dest_dir.glob('*'))}")
 
-        version_dir = dest_dir / version
-        version_dir.mkdir(exist_ok=True)
+            version_dir = dest_dir / version
+            version_dir.mkdir(exist_ok=True)
 
-        doxygen_out = Path(".github/doxygen/out/html")
-        if doxygen_out.exists():
-            shutil.copytree(doxygen_out, version_dir, dirs_exist_ok=True)
+            doxygen_out = Path(".github/doxygen/out/html")
+            if doxygen_out.exists():
+                shutil.copytree(doxygen_out, version_dir, dirs_exist_ok=True)
 
-        if not any(x in version for x in ["-SNAPSHOT", "-rc"]):
-            latest_link = dest_dir / "latest"
-            if latest_link.exists():
-                latest_link.unlink()
-            latest_link.symlink_to(version)
+            if not any(x in version for x in ["-SNAPSHOT", "-rc"]):
+                latest_link = dest_dir / "latest"
+                if latest_link.exists():
+                    latest_link.unlink()
+                latest_link.symlink_to(version)
 
-            robots_txt = dest_dir / "robots.txt"
-            robots_txt.write_text(
-                "User-agent: *\n"
-                "Allow: /\n"
-                "Allow: /latest/\n"
-                "Disallow: /*/[0-9]*/\n"
-            )
+                robots_txt = dest_dir / "robots.txt"
+                robots_txt.write_text(
+                    "User-agent: *\n"
+                    "Allow: /\n"
+                    "Allow: /latest/\n"
+                    "Disallow: /*/[0-9]*/\n"
+                )
 
-        self._generate_versions_list(dest_dir)
+            self._generate_versions_list(dest_dir)
 
     def _generate_versions_list(self, docs_dir: Path):
         """Generate the versions list markdown file"""
@@ -139,6 +139,7 @@ def prepare_documentation(self, version: str = None):
 
         print("Generated versions list:")
         print(versions_file.read_text())
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Prepare API documentation")
