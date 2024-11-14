@@ -16,28 +16,28 @@ class DocumentationManager:
     def _parse_cmake_version(self, cmake_file: Path) -> str:
         """
         Extract version from CMakeLists.txt
-        Takes into account commented RC version
+        Handles both PROJECT VERSION and RC_VERSION
         """
         content = cmake_file.read_text()
 
-        def extract_value(key: str) -> str:
-            # Look for uncommented SET lines only (no # at start of line)
-            pattern = f'^[^#]*SET\\({key}[\\s]*"([^"]*)"\\)'
-            match = re.search(pattern, content, re.MULTILINE)
-            return match.group(1) if match else None
+        # Extract PROJECT VERSION
+        project_version_pattern = r'PROJECT\s*\([^)]*VERSION\s+(\d+\.\d+\.\d+)[^)]*\)'
+        version_match = re.search(project_version_pattern, content, re.MULTILINE | re.IGNORECASE)
+        if not version_match:
+            raise ValueError("Could not extract PROJECT VERSION")
+        version = version_match.group(1)
 
-        major = extract_value("CMAKE_PROJECT_VERSION_MAJOR")
-        minor = extract_value("CMAKE_PROJECT_VERSION_MINOR")
-        patch = extract_value("CMAKE_PROJECT_VERSION_PATCH")
-        rc = extract_value("CMAKE_PROJECT_VERSION_RC")
+        # Extract RC_VERSION if not commented
+        rc_pattern = r'^[^#]*SET\s*\(RC_VERSION\s*"(\d+)"\s*\)'
+        rc_match = re.search(rc_pattern, content, re.MULTILINE)
 
-        if not all([major, minor, patch]):
-            raise ValueError("Could not extract all required version components")
-
-        version = f"{major}.{minor}.{patch}"
-        if rc:  # RC is defined and not commented
-            return f"{version}-rc{rc}-SNAPSHOT"
-        return f"{version}-SNAPSHOT"
+        # If this is not a release version, append SNAPSHOT
+        if rc_match:
+            # RC version found and not commented
+            return f"{version}-rc{rc_match.group(1)}-SNAPSHOT"
+        else:
+            # No RC version or RC version is commented
+            return f"{version}-SNAPSHOT"
 
     def _get_version_key(self, version_str: str) -> tuple:
         """Create a sortable key for version ordering"""
@@ -47,16 +47,12 @@ class DocumentationManager:
             base = (v.major, v.minor, v.micro)
 
             if "SNAPSHOT" in version_str:
-                print(f"DEBUG: Version {version_str} classified as SNAPSHOT")
                 return base + (2,)
             elif "rc" in version_str.lower():
                 rc_num = int(version_str.lower().split("rc")[1].split("-")[0])
-                print(f"DEBUG: Version {version_str} classified as RC{rc_num}")
                 return base + (1, -rc_num)
-            print(f"DEBUG: Version {version_str} classified as stable")
             return base + (0,)
         except InvalidVersion:
-            print(f"DEBUG: Invalid version {version_str}")
             return (0, 0, 0, 999)
 
     def prepare_documentation(self, version: str = None):
