@@ -8,21 +8,18 @@
 # *************************************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
-PROJECT(KeypopCardCppApi C CXX)
 
-SET(CMAKE_PROJECT_VERSION_MAJOR "2")
-SET(CMAKE_PROJECT_VERSION_MINOR "1")
-SET(CMAKE_PROJECT_VERSION_PATCH "0")
-SET(CMAKE_PROJECT_VERSION_RC    "1")
+# Uncomment and modify when preparing a release candidate
+# SET(RC_VERSION "1")
 
-if(CMAKE_PROJECT_VERSION_RC)
-    SET(CMAKE_PROJECT_VERSION "${CMAKE_PROJECT_VERSION_MAJOR}.
-                               ${CMAKE_PROJECT_VERSION_MINOR}.
-                               ${CMAKE_PROJECT_VERSION_PATCH}-rc${CMAKE_PROJECT_VERSION_RC}")
+PROJECT(KeypopCardCppApi
+        VERSION 2.1.0
+        C CXX)
+
+if(DEFINED RC_VERSION)
+    SET(PACKAGE_VERSION "${PROJECT_VERSION}-rc${RC_VERSION}")
 else()
-    SET(CMAKE_PROJECT_VERSION "${CMAKE_PROJECT_VERSION_MAJOR}.
-                               ${CMAKE_PROJECT_VERSION_MINOR}.
-                               ${CMAKE_PROJECT_VERSION_PATCH}")
+    SET(PACKAGE_VERSION "${PROJECT_VERSION}")
 endif()
 
 SET(PACKAGE_NAME "keypop-card-cpp-api")
