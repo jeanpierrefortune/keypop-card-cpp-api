@@ -41,20 +41,25 @@ class DocumentationManager:
            return f"{version}-SNAPSHOT"
 
     def _get_version_key(self, version_str: str) -> tuple:
-       """Create a sortable key for version ordering"""
-       try:
-           base_version = version_str.split('-')[0]
-           v = parse(base_version)
-           base = (v.major, v.minor, v.micro)
+        """Create a sortable key for version ordering"""
+        try:
+            base_version = version_str.split('-')[0]
+            v = parse(base_version)
+            base = (v.major, v.minor, v.micro)
 
-           if "SNAPSHOT" in version_str:
-               return base + (2,)
-           elif "rc" in version_str.lower():
-               rc_num = int(version_str.lower().split("rc")[1].split("-")[0])
-               return base + (1, -rc_num)
-           return base + (0,)
-       except InvalidVersion:
-           return (0, 0, 0, 999)
+            if "-rc" in version_str.lower():
+                rc_num = int(version_str.lower().split("rc")[1].split("-")[0])
+                if "SNAPSHOT" in version_str:
+                    # RC SNAPSHOT (most recent)
+                    return base + (0, rc_num)
+                else:
+                    # RC published later
+                    return base + (1, rc_num)
+            # Base SNAPSHOT version comes last
+            return base + (2, 0)
+        except InvalidVersion:
+            return (0, 0, 0, 999)
+
 
     def prepare_documentation(self, version: str = None):
         """Main method to prepare documentation"""
