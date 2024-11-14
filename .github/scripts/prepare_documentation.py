@@ -50,16 +50,16 @@ class DocumentationManager:
             if "-rc" in version_str.lower():
                 rc_num = int(version_str.lower().split("rc")[1].split("-")[0])
                 if "SNAPSHOT" in version_str:
-                    # RC SNAPSHOT (most recent)
+                    # RC SNAPSHOT est le plus récent
                     return base + (0, rc_num)
                 else:
-                    # RC published later
+                    # RC publiée ensuite
                     return base + (1, rc_num)
-            # Base SNAPSHOT version comes last
+            # Version SNAPSHOT de base en dernier
             return base + (2, 0)
+
         except InvalidVersion:
             return (0, 0, 0, 999)
-
 
     def prepare_documentation(self, version: str = None):
         """Main method to prepare documentation"""
