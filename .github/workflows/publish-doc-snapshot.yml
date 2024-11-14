@@ -3,56 +3,70 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'CMakeLists.txt'
+      - 'src/**'
+      - 'include/**'
+      - '.github/doxygen/**'
   workflow_dispatch:
 
 jobs:
   publish-doc-snapshot:
+    name: Generate and publish snapshot documentation
     permissions:
       contents: write
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+
     steps:
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Extract repository information
         id: repo-info
+        shell: bash
         run: |
-          echo "org_name=${GITHUB_REPOSITORY_OWNER}" >> $GITHUB_OUTPUT
-          echo "repo_name=${GITHUB_REPOSITORY#*/}" >> $GITHUB_OUTPUT
-
-      - name: Make scripts executable
-        run: chmod +x ./.github/scripts/*.sh
+          {
+            echo "org_name=${GITHUB_REPOSITORY_OWNER}"
+            echo "repo_name=${GITHUB_REPOSITORY#*/}"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.12'
+          cache: pip
 
       - name: Install dependencies
-        run: pip install packaging
+        run: |
+          python -m pip install --upgrade pip
+          pip install packaging
 
       - name: Patch Doxyfile
-        working-directory: .
-        run: ./.github/scripts/patch_doxyfile.sh
+        run: python ./.github/scripts/patch_doxyfile.py
 
-      - name: Generate project documentation with Doxygen
+      - name: Generate documentation
         uses: mattnotmitt/doxygen-action@v1.9.2
         with:
           working-directory: .github/doxygen/
           doxyfile-path: ./Doxyfile
 
-      - name: Prepare Doxygen doc page
-        working-directory: .
+      - name: Prepare documentation
         run: |
           python ./.github/scripts/prepare_documentation.py \
             --github-org "${{ steps.repo-info.outputs.org_name }}" \
             --repo-name "${{ steps.repo-info.outputs.repo_name }}"
 
-      - name: Deploy Doxygen documentation to gh-pages
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./${{ github.event.repository.name }}
           enable_jekyll: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'docs: update snapshot documentation'
