@@ -207,6 +207,7 @@ class DocumentationManager:
     def _generate_versions_list(self, docs_dir: Path):
         """Generate the versions list markdown file"""
         versions_file = Path("list_versions.md")
+        latest_version = ""
 
         logger.info("Looking for version directories")
         versions = []
@@ -225,7 +226,8 @@ class DocumentationManager:
             f.write("|:---:|---|\n")
 
             if Path("latest-stable").exists():
-                f.write("| latest-stable | [API documentation](latest-stable) |\n")
+                latest_target = Path("latest-stable").resolve().name
+                f.write(f"| latest-stable ({latest_target}) | [API documentation](latest-stable) |\n")
 
             for version in sorted_versions:
                 f.write(f"| {version} | [API documentation]({version}) |\n")
