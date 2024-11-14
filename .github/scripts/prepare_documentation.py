@@ -55,30 +55,35 @@ class DocumentationManager:
         except InvalidVersion:
             return (0, 0, 0, 999)
 
-    def prepare_documentation(self, version: str = None):
-        """Main method to prepare documentation"""
-        if not version:
-            version = self._parse_cmake_version(Path("CMakeLists.txt"))
-        print(f"Using version: {version}")
+def prepare_documentation(self, version: str = None):
+    """Main method to prepare documentation"""
+    if not version:
+        version = self._parse_cmake_version(Path("CMakeLists.txt"))
+    print(f"Using version: {version}")
 
-        repo_name = Path.cwd().name
-        dest_dir = Path(repo_name)
-        if dest_dir.exists():
-            shutil.rmtree(dest_dir)
+    repo_name = Path.cwd().name
+    dest_dir = Path(repo_name)
+    if dest_dir.exists():
+        shutil.rmtree(dest_dir)
 
-        subprocess.run(["git", "clone", "-b", self.gh_pages_branch, self.repo_url, repo_name], check=True)
+    subprocess.run(["git", "clone", "-b", self.gh_pages_branch, self.repo_url, repo_name], check=True)
 
-        print(f"DEBUG: Current directories before cleanup: {list(dest_dir.glob('*'))}")
+    print(f"DEBUG: Current directories before cleanup: {list(dest_dir.glob('*'))}")
 
-        # Clean up SNAPSHOT versions if this is a release
-        if not version.endswith("-SNAPSHOT"):
-            base_version = version.split("-rc")[0]
-            print(f"DEBUG: Cleaning up SNAPSHOTs for base version: {base_version}")
-            snapshots = list(dest_dir.glob(f"{base_version}*-SNAPSHOT"))
-            print(f"DEBUG: Found SNAPSHOT directories to remove: {snapshots}")
-            for snapshot in snapshots:
-                print(f"Removing SNAPSHOT directory: {snapshot}")
-                shutil.rmtree(snapshot)
+    # Clean up SNAPSHOT versions if this is a release
+    if not version.endswith("-SNAPSHOT"):
+        if "-rc" in version:
+            rc_snapshot = f"{version}-SNAPSHOT"
+            snapshot_dir = dest_dir / rc_snapshot
+            if snapshot_dir.exists():
+                print(f"Removing RC SNAPSHOT directory: {snapshot_dir}")
+                shutil.rmtree(snapshot_dir)
+        else:
+            base_version = version
+            snapshot_dir = dest_dir / f"{base_version}-SNAPSHOT"
+            if snapshot_dir.exists():
+                print(f"Removing SNAPSHOT directory: {snapshot_dir}")
+                shutil.rmtree(snapshot_dir)
 
         print(f"DEBUG: Current directories after cleanup: {list(dest_dir.glob('*'))}")
 
