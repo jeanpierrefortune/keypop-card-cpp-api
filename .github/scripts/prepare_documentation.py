@@ -41,27 +41,19 @@ class DocumentationManager:
            return f"{version}-SNAPSHOT"
 
     def _get_version_key(self, version_str: str) -> tuple:
-        """
-        Create a sortable key for version ordering that maintains the following order:
-        1. RC SNAPSHOT versions (newest RC first)
-        2. RC released versions
-        3. Base SNAPSHOT version
-        """
         try:
             base_version = version_str.split('-')[0]
             v = parse(base_version)
             base = (v.major, v.minor, v.micro)
 
-            if "-rc" in version_str.lower():
+            if "rc" in version_str.lower():                  # Test RC first
                 rc_num = int(version_str.lower().split("rc")[1].split("-")[0])
                 if "SNAPSHOT" in version_str:
-                    # RC SNAPSHOT is most recent
-                    return base + (0, rc_num)
-                else:
-                    # Released RC comes next
-                    return base + (1, rc_num)
-            # Base SNAPSHOT version comes last
-            return base + (2, 0)
+                    return base + (0, rc_num)                # RC SNAPSHOT first
+                return base + (1, rc_num)                    # Released RC second
+            if "SNAPSHOT" in version_str:                    # Base SNAPSHOT last
+                return base + (2, 0)
+            return base + (3, 0)                            # Stable version (not used here)
 
         except InvalidVersion:
             return (0, 0, 0, 999)
