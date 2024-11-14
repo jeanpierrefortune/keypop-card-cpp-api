@@ -10,9 +10,6 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: .
 
     steps:
       - name: Checkout repository
@@ -42,11 +39,11 @@ jobs:
           pip install packaging
 
       - name: Check version
-        run: python ./.github/scripts/check_version.py "${{ steps.repo-info.outputs.version }}"
+        run: python .github/scripts/check_version.py "${{ steps.repo-info.outputs.version }}"
         if: github.event_name == 'release'
 
       - name: Patch Doxyfile
-        run: python ./.github/scripts/patch_doxyfile.py "${{ steps.repo-info.outputs.version }}"
+        run: python .github/scripts/patch_doxyfile.py "${{ steps.repo-info.outputs.version }}"
 
       - name: Generate documentation
         uses: mattnotmitt/doxygen-action@v1.9.2
@@ -56,7 +53,7 @@ jobs:
 
       - name: Prepare documentation
         run: |
-          python ./.github/scripts/prepare_documentation.py \
+          python .github/scripts/prepare_documentation.py \
             --github-org "${{ steps.repo-info.outputs.org_name }}" \
             --repo-name "${{ steps.repo-info.outputs.repo_name }}" \
             --version "${{ steps.repo-info.outputs.version }}"
