@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['readerbrokencommunicationexception_2ehpp_0',['ReaderBrokenCommunicationException.hpp',['../_reader_broken_communication_exception_8hpp.html',1,'']]]
+  ['smartcardspi_2ehpp_0',['SmartCardSpi.hpp',['../_smart_card_spi_8hpp.html',1,'']]]
 ];
