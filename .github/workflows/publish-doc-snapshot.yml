@@ -1,17 +1,14 @@
-name: Publish API documentation (snapshot)
+name: Publish API documentation (release)
 on:
-  push:
-    branches:
-      - main
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
-  publish-doc-snapshot:
-    name: Generate and publish snapshot documentation
+  publish-doc-release:
     permissions:
       contents: write
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,36 +20,15 @@ jobs:
         shell: bash
         run: |
           {
-            echo "org_name=${GITHUB_REPOSITORY_OWNER}"
             echo "repo_name=${GITHUB_REPOSITORY#*/}"
+            echo "version=${GITHUB_REF#refs/tags/}"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Generate and prepare documentation
+        uses: jeanpierrefortune/keypop-action-docs/doxygen@v1
         with:
-          python-version: '3.12'
-          cache: pip
-          cache-dependency-path: .github/scripts/requirements.txt
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r .github/scripts/requirements.txt
-
-      - name: Patch Doxyfile
-        run: python .github/scripts/patch_doxyfile.py
-
-      - name: Generate documentation
-        uses: mattnotmitt/doxygen-action@v1.9.2
-        with:
-          working-directory: .github/doxygen/
-          doxyfile-path: ./Doxyfile
-
-      - name: Prepare documentation
-        run: |
-          python .github/scripts/prepare_documentation.py \
-            --github-org "${{ steps.repo-info.outputs.org_name }}" \
-            --repo-name "${{ steps.repo-info.outputs.repo_name }}"
+          repo-name: ${{ steps.repo-info.outputs.repo_name }}
+          version: ${{ steps.repo-info.outputs.version }}
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
@@ -62,4 +38,4 @@ jobs:
           enable_jekyll: true
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: 'docs: update snapshot documentation'
+          commit_message: 'docs: update ${{ steps.repo-info.outputs.version }} documentation'
