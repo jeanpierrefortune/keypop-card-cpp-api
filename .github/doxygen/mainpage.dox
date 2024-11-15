@@ -1,0 +1,84 @@
+/**
+ * @mainpage Keypop Card C++ API Documentation
+ *
+ * @section overview Overview
+ *
+ * The Keypop Card C++ API defines a standardized interface layer for card communication aligned with the
+ * <a href="https://terminal-api.calypsonet.org/specifications/reader-layer/card-api/">Terminal Card specifications</a>
+ * from the Calypso Networks Association. This C++ interface provides a port of the reference
+ * <a href="https://github.com/eclipse-keypop/keypop-card-java-api">Keypop Card Java API</a> implementation.
+ *
+ * @section core Core Components
+ *
+ * @subsection apdu_comm APDU Communication
+ * - keypop::card::spi::ApduRequestSpi : Interface for constructing APDU commands to be sent to a card
+ * - keypop::card::ApduResponseApi : Interface for handling data received in response to APDU commands
+ * - keypop::card::spi::CardRequestSpi : Groups multiple APDUs to be executed consecutively
+ * - keypop::card::CardResponseApi : Contains responses from multiple APDU executions
+ *
+ * @subsection selection Card Selection Framework
+ * - keypop::card::spi::CardSelectionRequestSpi : Manages input data for the card selection process
+ * - keypop::card::CardSelectionResponseApi : Handles data from card startup including selection data and responses
+ * - keypop::card::spi::CardSelectionExtensionSpi : Provides extension mechanisms for specific card protocols
+ * - keypop::card::spi::SmartCardSpi : Base interface for card implementations
+ *
+ * @subsection channel Channel Management
+ * - keypop::card::ProxyReaderApi : Interface for transmitting card requests with physical channel control
+ * - keypop::card::ChannelControl : Policy enumeration for managing physical channels
+ *
+ * @subsection exceptions Exception Handling
+ * The API provides a robust exception hierarchy:
+ * - keypop::card::AbstractApduException : Base class for APDU-related exceptions
+ * - keypop::card::CardBrokenCommunicationException : Handles card communication failures
+ * - keypop::card::ReaderBrokenCommunicationException : Handles reader communication failures
+ * - keypop::card::UnexpectedStatusWordException : Manages unexpected APDU status responses
+ * - keypop::card::ParseException : Handles card selection response parsing failures
+ *
+ * @section features Key Features
+ *
+ * @subsection design Interface-Driven Design
+ * - Abstract interfaces enabling multiple concrete implementations
+ * - Clear separation of concerns between components
+ * - Modular architecture supporting extensions
+ *
+ * @subsection communication Robust Communication
+ * - Comprehensive APDU command and response handling
+ * - Channel management policies
+ * - Structured exception hierarchy
+ *
+ * @section technical Technical Specifications
+ *
+ * @subsection version API Version
+ * Current version: @ref CardApiProperties_VERSION
+ *
+ * @subsection requirements Requirements
+ * - C++17 or higher
+ * - Header-only implementation with optional source files for testing
+ * - Standard library dependencies only
+ *
+ * @subsection principles Design Principles
+ * - RAII compliance
+ * - Exception-based error handling
+ * - Binary compatibility guarantees within major versions
+ * - Const-correctness throughout the API
+ *
+ * @section implementation Implementation Guidelines
+ *
+ * @subsection usage Basic Usage Pattern
+ * 1. Implement required SPI interfaces
+ * 2. Configure card selection parameters
+ * 3. Handle channel management using keypop::card::ChannelControl
+ * 4. Process APDU communications
+ * 5. Manage exceptions appropriately
+ *
+ * @subsection channel_management Channel Management
+ * - Use keypop::card::ChannelControl::KEEP_OPEN for transaction sequences
+ * - Use keypop::card::ChannelControl::CLOSE_AFTER for single operations
+ * - Handle channel closure explicitly through ProxyReaderApi::releaseChannel()
+ *
+ * @subsection error_handling Error Handling Strategy
+ * 1. Check for communication errors (CardBrokenCommunicationException, ReaderBrokenCommunicationException)
+ * 2. Validate APDU responses (UnexpectedStatusWordException)
+ * 3. Handle parsing errors during selection (ParseException)
+ * 4. Access partial responses through AbstractApduException when available
+ */
