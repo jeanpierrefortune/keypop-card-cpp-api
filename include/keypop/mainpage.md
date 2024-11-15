@@ -33,11 +33,11 @@ For more details on using the API, refer to the [API Reference](https://keypop.o
 
 Contributions to the Keypop Card C++ API are welcome! Please refer to the [Contributing Guide](https://keypop.org/community/contributing/) for guidelines on how to contribute to this project.
 
-When participating in this project, please adhere to the [Code of Conduct](CODE_OF_CONDUCT.md).
+When participating in this project, please adhere to the [Code of Conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE). For more information, refer to the [LICENSE](LICENSE) file.
+This project is licensed under the [MIT License](../../LICENSE). For more information, refer to the [LICENSE](../../LICENSE) file.
 
 ## Contact
 
