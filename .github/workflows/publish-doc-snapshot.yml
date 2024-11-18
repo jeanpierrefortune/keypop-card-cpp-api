@@ -22,11 +22,10 @@ jobs:
         run: |
           {
             echo "repo_name=${GITHUB_REPOSITORY#*/}"
-            echo "owner=${GITHUB_REPOSITORY%/*}"
           } >> "$GITHUB_OUTPUT"
 
       - name: Generate and prepare documentation
-        uses: ${{ steps.repo-info.outputs.owner }}/keypop-action-docs/doxygen@v1
+        uses: jeanpierrefortune/keypop-action-docs/doxygen@v1
         with:
           repo-name: ${{ steps.repo-info.outputs.repo_name }}
 
