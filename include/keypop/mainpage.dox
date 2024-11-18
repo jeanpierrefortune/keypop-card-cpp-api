@@ -5,35 +5,63 @@
  *
  * The Keypop Card C++ API defines interfaces for card communication aligned with the
  * <a href="https://terminal-api.calypsonet.org/specifications/reader-layer/card-api/">Terminal Card specifications</a>
- * from the Calypso Networks Association. This C++ interface provides a port of the reference
- * <a href="https://github.com/eclipse-keypop/keypop-card-java-api">Keypop Card Java API</a>.
+ * from the Calypso Networks Association. This C++ interface provides a port of the
+ * reference <a href="https://github.com/eclipse-keypop/keypop-card-java-api">Keypop Card Java API</a>.
  *
- * @section core Core Components
+ * @section architecture Architecture & Components
  *
- * @subsection apdu_comm APDU Communication
- * - keypop::card::spi::ApduRequestSpi : Interface for constructing APDU commands
- * - keypop::card::ApduResponseApi : Interface for APDU responses
- * - keypop::card::spi::CardRequestSpi : Groups multiple APDUs
- * - keypop::card::CardResponseApi : Contains responses from multiple APDU executions
+ * @subsection apdu_communication APDU Communication
  *
- * @subsection selection Card Selection
- * - keypop::card::spi::CardSelectionRequestSpi : Input data for card selection
- * - keypop::card::CardSelectionResponseApi : Card startup and selection data
- * - keypop::card::spi::CardSelectionExtensionSpi : Extension mechanisms for specific card protocols
- * - keypop::card::spi::SmartCardSpi : Base interface for card implementations
+ * - keypop::card::spi::ApduRequestSpi
+ *   Interface for constructing and formatting APDU commands
  *
- * @subsection channel Channel Management
- * - keypop::card::ProxyReaderApi : Card request transmission and channel control
- * - keypop::card::ChannelControl : Channel management policy (KEEP_OPEN, CLOSE_AFTER)
+ * - keypop::card::ApduResponseApi
+ *   Interface for handling and processing APDU responses
  *
- * @subsection exceptions Exceptions
- * The API defines the following exceptions:
- * - keypop::card::AbstractApduException : Base class for APDU-related exceptions
- * - keypop::card::CardBrokenCommunicationException : Card communication failures
- * - keypop::card::ReaderBrokenCommunicationException : Reader communication failures
- * - keypop::card::UnexpectedStatusWordException : Unexpected APDU status responses
- * - keypop::card::ParseException : Card selection response parsing failures
+ * - keypop::card::spi::CardRequestSpi
+ *   Manager for grouping multiple APDU commands
  *
- * @section version Version
- * Current version: @ref CardApiProperties_VERSION
+ * - keypop::card::CardResponseApi
+ *   Container for responses from multiple APDU executions
+ *
+ * @subsection card_selection Card Selection Process
+ *
+ * - keypop::card::spi::CardSelectionRequestSpi
+ *   Input data and parameters for card selection operations
+ *
+ * - keypop::card::CardSelectionResponseApi
+ *   Card initialization and selection data handler
+ *
+ * - keypop::card::spi::CardSelectionExtensionSpi
+ *   Extension mechanisms for specific card protocols
+ *
+ * - keypop::card::spi::SmartCardSpi
+ *   Foundation interface for card implementations
+ *
+ * @subsection channel_management Communication Channel Management
+ *
+ * - keypop::card::ProxyReaderApi
+ *   Request transmission and channel control handler
+ *
+ * - keypop::card::ChannelControl
+ *   Channel management policies (KEEP_OPEN, CLOSE_AFTER)
+ *
+ * @section exceptions Exception Handling
+ *
+ * The API implements the following exception hierarchy:
+ *
+ * - keypop::card::AbstractApduException
+ *   Base class for APDU-related exceptions
+ *
+ * - keypop::card::CardBrokenCommunicationException
+ *   Card communication failure handling
+ *
+ * - keypop::card::ReaderBrokenCommunicationException
+ *   Reader communication failure handling
+ *
+ * - keypop::card::UnexpectedStatusWordException
+ *   Unexpected APDU status response handling
+ *
+ * - keypop::card::ParseException
+ *   Card selection response parsing failure handling
  */
