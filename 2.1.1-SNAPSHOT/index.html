@@ -70,42 +70,40 @@ $(function() {
 <div class="textblock"><h1><a class="anchor" id="overview"></a>
 Overview</h1>
 <p >The Keypop Card C++ API defines interfaces for card communication aligned with the <a href="https://terminal-api.calypsonet.org/specifications/reader-layer/card-api/">Terminal Card specifications</a> from the Calypso Networks Association. This C++ interface provides a port of the reference <a href="https://github.com/eclipse-keypop/keypop-card-java-api">Keypop Card Java API</a>.</p>
-<h1><a class="anchor" id="core"></a>
-Core Components</h1>
-<h2><a class="anchor" id="apdu_comm"></a>
+<h1><a class="anchor" id="architecture"></a>
+Architecture &amp; Components</h1>
+<h2><a class="anchor" id="apdu_communication"></a>
 APDU Communication</h2>
 <ul>
-<li><a class="el" href="classkeypop_1_1card_1_1spi_1_1_apdu_request_spi.html">keypop::card::spi::ApduRequestSpi</a> : Interface for constructing APDU commands</li>
-<li><a class="el" href="classkeypop_1_1card_1_1_apdu_response_api.html">keypop::card::ApduResponseApi</a> : Interface for APDU responses</li>
-<li><a class="el" href="classkeypop_1_1card_1_1spi_1_1_card_request_spi.html">keypop::card::spi::CardRequestSpi</a> : Groups multiple APDUs</li>
-<li><a class="el" href="classkeypop_1_1card_1_1_card_response_api.html">keypop::card::CardResponseApi</a> : Contains responses from multiple APDU executions</li>
+<li><a class="el" href="classkeypop_1_1card_1_1spi_1_1_apdu_request_spi.html">keypop::card::spi::ApduRequestSpi</a> Interface for constructing and formatting APDU commands</li>
+<li><a class="el" href="classkeypop_1_1card_1_1_apdu_response_api.html">keypop::card::ApduResponseApi</a> Interface for handling and processing APDU responses</li>
+<li><a class="el" href="classkeypop_1_1card_1_1spi_1_1_card_request_spi.html">keypop::card::spi::CardRequestSpi</a> Manager for grouping multiple APDU commands</li>
+<li><a class="el" href="classkeypop_1_1card_1_1_card_response_api.html">keypop::card::CardResponseApi</a> Container for responses from multiple APDU executions</li>
 </ul>
-<h2><a class="anchor" id="selection"></a>
-Card Selection</h2>
+<h2><a class="anchor" id="card_selection"></a>
+Card Selection Process</h2>
 <ul>
-<li><a class="el" href="classkeypop_1_1card_1_1spi_1_1_card_selection_request_spi.html">keypop::card::spi::CardSelectionRequestSpi</a> : Input data for card selection</li>
-<li><a class="el" href="classkeypop_1_1card_1_1_card_selection_response_api.html">keypop::card::CardSelectionResponseApi</a> : Card startup and selection data</li>
-<li><a class="el" href="classkeypop_1_1card_1_1spi_1_1_card_selection_extension_spi.html">keypop::card::spi::CardSelectionExtensionSpi</a> : Extension mechanisms for specific card protocols</li>
-<li><a class="el" href="classkeypop_1_1card_1_1spi_1_1_smart_card_spi.html">keypop::card::spi::SmartCardSpi</a> : Base interface for card implementations</li>
+<li><a class="el" href="classkeypop_1_1card_1_1spi_1_1_card_selection_request_spi.html">keypop::card::spi::CardSelectionRequestSpi</a> Input data and parameters for card selection operations</li>
+<li><a class="el" href="classkeypop_1_1card_1_1_card_selection_response_api.html">keypop::card::CardSelectionResponseApi</a> Card initialization and selection data handler</li>
+<li><a class="el" href="classkeypop_1_1card_1_1spi_1_1_card_selection_extension_spi.html">keypop::card::spi::CardSelectionExtensionSpi</a> Extension mechanisms for specific card protocols</li>
+<li><a class="el" href="classkeypop_1_1card_1_1spi_1_1_smart_card_spi.html">keypop::card::spi::SmartCardSpi</a> Foundation interface for card implementations</li>
 </ul>
-<h2><a class="anchor" id="channel"></a>
-Channel Management</h2>
+<h2><a class="anchor" id="channel_management"></a>
+Communication Channel Management</h2>
 <ul>
-<li><a class="el" href="classkeypop_1_1card_1_1_proxy_reader_api.html">keypop::card::ProxyReaderApi</a> : Card request transmission and channel control</li>
-<li><a class="el" href="namespacekeypop_1_1card.html#a4cd155383f6771a5f2907ad45fe06f99">keypop::card::ChannelControl</a> : Channel management policy (KEEP_OPEN, CLOSE_AFTER)</li>
+<li><a class="el" href="classkeypop_1_1card_1_1_proxy_reader_api.html">keypop::card::ProxyReaderApi</a> Request transmission and channel control handler</li>
+<li><a class="el" href="namespacekeypop_1_1card.html#a4cd155383f6771a5f2907ad45fe06f99">keypop::card::ChannelControl</a> Channel management policies (KEEP_OPEN, CLOSE_AFTER)</li>
 </ul>
-<h2><a class="anchor" id="exceptions"></a>
-Exceptions</h2>
-<p >The API defines the following exceptions:</p><ul>
-<li><a class="el" href="classkeypop_1_1card_1_1_abstract_apdu_exception.html">keypop::card::AbstractApduException</a> : Base class for APDU-related exceptions</li>
-<li><a class="el" href="classkeypop_1_1card_1_1_card_broken_communication_exception.html">keypop::card::CardBrokenCommunicationException</a> : Card communication failures</li>
-<li><a class="el" href="classkeypop_1_1card_1_1_reader_broken_communication_exception.html">keypop::card::ReaderBrokenCommunicationException</a> : Reader communication failures</li>
-<li><a class="el" href="classkeypop_1_1card_1_1_unexpected_status_word_exception.html">keypop::card::UnexpectedStatusWordException</a> : Unexpected APDU status responses</li>
-<li><a class="el" href="classkeypop_1_1card_1_1_parse_exception.html">keypop::card::ParseException</a> : Card selection response parsing failures</li>
+<h1><a class="anchor" id="exceptions"></a>
+Exception Handling</h1>
+<p >The API implements the following exception hierarchy:</p>
+<ul>
+<li><a class="el" href="classkeypop_1_1card_1_1_abstract_apdu_exception.html">keypop::card::AbstractApduException</a> Base class for APDU-related exceptions</li>
+<li><a class="el" href="classkeypop_1_1card_1_1_card_broken_communication_exception.html">keypop::card::CardBrokenCommunicationException</a> Card communication failure handling</li>
+<li><a class="el" href="classkeypop_1_1card_1_1_reader_broken_communication_exception.html">keypop::card::ReaderBrokenCommunicationException</a> Reader communication failure handling</li>
+<li><a class="el" href="classkeypop_1_1card_1_1_unexpected_status_word_exception.html">keypop::card::UnexpectedStatusWordException</a> Unexpected APDU status response handling</li>
+<li><a class="el" href="classkeypop_1_1card_1_1_parse_exception.html">keypop::card::ParseException</a> Card selection response parsing failure handling </li>
 </ul>
-<h1><a class="anchor" id="version"></a>
-Version</h1>
-<p >Current version: CardApiProperties_VERSION </p>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->
