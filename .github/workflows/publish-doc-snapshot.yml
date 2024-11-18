@@ -25,7 +25,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Generate and prepare documentation
-        uses: ${{ github.repository_owner }}/keypop-action-docs/doxygen@v1
+        uses: ${{GITHUB_REPOSITORY_OWNER}}/keypop-action-docs/doxygen@v1
         with:
           repo-name: ${{ steps.repo-info.outputs.repo_name }}
 
