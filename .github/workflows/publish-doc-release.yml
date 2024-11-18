@@ -2,7 +2,6 @@ name: Publish API documentation (release)
 on:
   release:
     types: [published]
-  workflow_dispatch:
 
 jobs:
   publish-doc-release:
@@ -25,7 +24,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Generate and prepare documentation
-        uses: ${GITHUB_REPOSITORY_OWNER}/keypop-action-docs/doxygen@v1
+        uses: ${{ github.repository_owner }}/keypop-action-docs/doxygen@v1
         with:
           repo-name: ${{ steps.repo-info.outputs.repo_name }}
           version: ${{ steps.repo-info.outputs.version }}
