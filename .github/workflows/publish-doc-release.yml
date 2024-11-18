@@ -1,13 +1,11 @@
-# .github/workflows/publish-doc-snapshot.yml
-name: Publish API documentation (snapshot)
+name: Publish API documentation (release)
 on:
-  push:
-    branches:
-      - main
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
-  publish-doc-snapshot:
+  publish-doc-release:
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -23,12 +21,14 @@ jobs:
         run: |
           {
             echo "repo_name=${GITHUB_REPOSITORY#*/}"
+            echo "version=${GITHUB_REF#refs/tags/}"
           } >> "$GITHUB_OUTPUT"
 
       - name: Generate and prepare documentation
-        uses: jeanpierrefortune/keypop-action-docs/doxygen@v1
+        uses: ${GITHUB_REPOSITORY_OWNER}/keypop-action-docs/doxygen@v1
         with:
           repo-name: ${{ steps.repo-info.outputs.repo_name }}
+          version: ${{ steps.repo-info.outputs.version }}
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
@@ -38,4 +38,4 @@ jobs:
           enable_jekyll: true
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: 'docs: update snapshot documentation'
+          commit_message: 'docs: update ${{ steps.repo-info.outputs.version }} documentation'
