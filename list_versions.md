@@ -1,6 +1,5 @@
 | Version | Documents |
 |:---:|---|
-| 2.1.1-rc1-SNAPSHOT | [API documentation](2.1.1-rc1-SNAPSHOT) |
 | 2.1.1-rc1 | [API documentation](2.1.1-rc1) |
 | 2.1.1-SNAPSHOT | [API documentation](2.1.1-SNAPSHOT) |
 | latest-stable (2.1.0) | [API documentation](latest-stable) |
