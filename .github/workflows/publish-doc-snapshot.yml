@@ -16,14 +16,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract repository information
-        id: repo-info
-        shell: bash
-        run: |
-          {
-            echo "repo_name=${GITHUB_REPOSITORY#*/}"
-          } >> "$GITHUB_OUTPUT"
-
       - name: Generate and prepare documentation
         uses: jeanpierrefortune/keypop-action-docs/doxygen@v1
         with:
@@ -35,6 +27,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./${{ github.event.repository.name }}
           enable_jekyll: true
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
+          user_name: "Eclipse Keypop Bot"
+          user_email: "${{ github.repository }}-bot@eclipse.org"
           commit_message: 'docs: update snapshot documentation'

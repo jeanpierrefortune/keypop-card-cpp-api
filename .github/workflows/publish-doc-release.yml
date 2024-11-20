@@ -2,6 +2,11 @@ name: Publish API documentation (release)
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (ex: 1.0.0)'
+        required: true
 
 jobs:
   publish-doc-release:
@@ -14,20 +19,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract repository information
-        id: repo-info
-        shell: bash
-        run: |
-          {
-            echo "repo_name=${GITHUB_REPOSITORY#*/}"
-            echo "version=${GITHUB_REF#refs/tags/}"
-          } >> "$GITHUB_OUTPUT"
-
       - name: Generate and prepare documentation
         uses: jeanpierrefortune/keypop-action-docs/doxygen@v1
         with:
-          repo-name: ${{ steps.repo-info.outputs.repo_name }}
-          version: ${{ steps.repo-info.outputs.version }}
+          repo-name: ${{ github.event.repository.name }}
+          version: ${{ github.event.inputs.version || github.ref_name }}
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
@@ -35,6 +31,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./${{ github.event.repository.name }}
           enable_jekyll: true
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: 'docs: update ${{ steps.repo-info.outputs.version }} documentation'
+          user_name: "Eclipse Keypop Bot"
+          user_email: "${{ github.repository }}-bot@eclipse.org"
+          commit_message: 'docs: update ${{ github.event.inputs.version || github.ref_name }} documentation'
