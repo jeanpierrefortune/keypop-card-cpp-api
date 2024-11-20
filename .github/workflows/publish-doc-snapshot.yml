@@ -19,7 +19,7 @@ jobs:
       - name: Generate and prepare documentation
         uses: jeanpierrefortune/keypop-action-docs/doxygen@v1
         with:
-          repo-name: ${{ steps.repo-info.outputs.repo_name }}
+          repo-name: ${{ github.event.repository.name }}
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
