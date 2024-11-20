@@ -10,7 +10,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 
 # Uncomment and modify when preparing a release candidate
-#SET(RC_VERSION "2")
+SET(RC_VERSION "1")
 
 PROJECT(KeypopCardCppApi
         VERSION 2.1.1
