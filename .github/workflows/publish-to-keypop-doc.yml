@@ -17,6 +17,6 @@ jobs:
       - name: Repository Dispatch Event
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
           repository: jeanpierrefortune/keypop-doc
           event-type: update-submodules
