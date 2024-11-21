@@ -10,7 +10,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 
 PROJECT(KeypopCardCppApi
-        VERSION 2.1.1.1
+        VERSION 2.1.2
         C CXX)
 
 SET(PACKAGE_NAME "keypop-card-cpp-api")
